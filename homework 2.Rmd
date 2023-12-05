@@ -1,0 +1,128 @@
+---
+title: "Homework 2"
+author: "Alex Hentz"
+date: "2023-09-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Google Colab link
+https://colab.research.google.com/drive/18yJEIOKjwyQzuj0-Trqfn2Eew7ZlNcVp?usp=sharing
+
+
+```{r}
+teams <- read.csv("https://raw.githubusercontent.com/gjm112/DSCI401/main/data/Teams.csv")
+
+library(mdsr)
+library(tidyverse)
+library(ggplot2)
+
+```
+
+```{r}
+## Question 1a
+
+new_teams <- teams %>% select(yearID, W, L) %>% filter(yearID > 1999 & yearID <2010)
+
+## Question 1b
+new_teams_year <- teams %>% filter(teamID == "CHN") %>% filter(HR > 199) %>% group_by(yearID)
+median_W <- median(new_teams_year$W)
+
+# 7 years, median wins = 84
+
+## Question 1c
+pres_blocks <- seq(1872,2024, by=4)
+
+election_hr <- teams %>% mutate(election=cut(yearID,breaks = pres_blocks),right=F) %>% 
+filter(!is.na(election)) %>% 
+group_by(election) %>% 
+summarize(N=n(), total_hr = sum(HR)) %>% 
+arrange(desc(total_hr)) %>% head(1)
+
+# 2000-2004 had the most Homeruns
+
+## Question 1d
+ggplot(aes(x = yearID, y = HR, color = lgID), data = teams) +
+  geom_line() +
+  xlab("Year") +
+  ylab("Homeruns")
+  
+## Question 1e
+
+teams$winning_record <- teams$W > teams$L
+teams$winning_record <- factor(teams$winning_record, levels = c(FALSE, TRUE), labels = c("No", "Yes"))
+ggplot(data = teams, aes(x = R, y = RA, color = winning_record)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Runs vs. Runs Against",
+       x = "Runs (R)",
+       y = "Runs Against (RA)",
+       color = "Winning Record") +
+  scale_color_manual(values = c("No" = "red", "Yes" = "green")) +
+  theme_minimal()
+```
+
+```{r}
+## Part 2 Question 2a
+Vio <- Violations %>%
+  mutate(grade = ifelse(is.na(grade) | grade != "A", "not A", "A")) %>%
+  group_by(boro, grade) %>%
+  summarise(count = n()) %>%
+  group_by(boro) %>%
+  mutate(proportion = count / sum(count))
+  
+# Bronx = 35.2%, Brooklyn = 33%, Manhattan = 34.2%, Queens = 32.9%, Staten Island = 36.2%
+
+## Part 2 Question 2b
+
+dba_inspect_counts <- Violations %>%
+  group_by(dba) %>%
+  summarise(Total_Inspections = n())
+
+top_10_dbas <- dba_inspect_counts %>%
+  arrange(desc(Total_Inspections)) %>%
+  head(10)
+
+top_10_data <- Violations %>%
+  filter(dba %in% top_10_dbas$dba)
+
+dba_avg_scores <- top_10_data %>%
+  group_by(dba) %>%
+  summarise(Avg_Score = mean(score, na.rm = TRUE)) %>%
+  arrange(Avg_Score)
+
+lowest_avg_dba <- dba_avg_scores$dba[which.min(dba_avg_scores$Avg_Score)]
+cat("DBA with the lowest average inspection score:", lowest_avg_dba, "\n")
+
+# Starbucks had the lowest average inspection score
+
+## Part 2 Question 2c
+filtered_data <- Violations %>%
+  filter(str_detect(zipcode, "^1[0-9]{4}$")) %>%
+  group_by(zipcode) %>%
+  filter(sum(n()) >= 50)
+  
+median_scores <- filtered_data %>%
+  group_by(zipcode) %>%
+  summarise(Median_Score = median(score, na.rm = TRUE))
+  
+plot_zips <- filtered_data %>%
+  group_by(zipcode) %>%
+  summarise(Total_Inspections = sum(n()))
+
+ggplot(data = plot_zips, aes(x = Total_Inspections, y = median_scores$Median_Score)) +
+  geom_point() +
+  labs(
+    title = "Relationship Between Number of Inspections and Median Violation Score",
+    x = "Total Inspections",
+    y = "Median Violation Score"
+  ) +
+  theme_minimal()
+
+
+# There seems to be a method of how low or high a score is given depending on how many inspections have occured. Also there are a few outliers which raise questions about where those scores are coming from. 
+```
+
