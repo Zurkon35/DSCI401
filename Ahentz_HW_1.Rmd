@@ -1,0 +1,48 @@
+---
+title: "Homework 1"
+author: "Alex Hentz"
+date: "2023-08-31"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Personal Github
+https://github.com/Zurkon35/DSCI401.git
+
+# Google.colab link
+https://colab.research.google.com/drive/1vjhDvNLHubnipwX8KeY4mLMPyh42mLbi?usp=sharing
+
+
+
+```{r}
+cubs <- read.csv("https://raw.githubusercontent.com/gjm112/DSCI401/main/data/cubs_all_time.csv")
+
+
+# Question one
+sum(cubs$W)
+sum(cubs$L)
+
+# Wins: 11141    Losses: 10592
+
+# Question 2
+which.max(cubs$R)
+cubs[129,]
+which.min(cubs$R)
+cubs[3,]
+
+# Year for most runs: 1894   Least runs: 2020
+
+# 2020 was the year of covid season so it makes sense that their runs are the lowest of all seasons
+
+# Question 3
+sum(cubs$Attendance > 3000000)
+temp <- cubs$Attendance[!is.na(cubs$Attendance)]
+sum(temp > 3000000)
+
+# 12 years with over 3 million in attendence
+```
