@@ -1,0 +1,59 @@
+---
+title: "Homework 4"
+author: "Alex Hentz"
+date: "2023-10-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Google Colab Link: https://colab.research.google.com/drive/1JWvQPGWpbX6XVBvNWg2E6ADcnnX20U0q?usp=sharing
+
+
+```{r}
+# Question 1a
+library(tidyverse)
+library(ggplot2)
+library(mosaicData)
+library(dplyr)
+
+data("HELPrct")
+numeric_cols <- sapply(HELPrct, is.numeric)
+means_help <- colMeans(HELPrct[, numeric_cols], na.rm = TRUE)
+print(means_help)
+
+# Question 1b
+help_b <- HELPrct %>% mutate(age_group = cut(age, breaks = seq(0, max(age) + 10, by = 10), include.lowest = TRUE))
+result_b <- help_b %>% group_by(sex, age) %>% summarize(across(where(is.numeric),  mean, na.rm = TRUE), .groups = "drop")
+print(result_b)
+
+# Question 1c
+numeric_vals <- setdiff(names(result_b), c("age", "sex"))
+
+g <- lapply(numeric_vals, function(var) {
+  result_b %>% 
+    ggplot(aes(x = age, y = !!sym(var), color = sex)) +
+    geom_line() +
+    labs(title = paste("Avg Age vs.", var),
+         x = "Avg Age",
+         y = var) +
+    facet_wrap(~sex, scales = "free_y")
+  })                      
+
+print(g)
+
+# Question 2
+
+library(Lahman)
+data("Teams")
+
+bk_teams = c("BR1", "BR2", "BR3", "BR4", "BRO", "BRP", "BRF")
+
+count <- function(team) {
+  Teams %>% filter(teamID == team) %>% nrow()
+}
+bk_teams %>% map_int(count)
+
+```
