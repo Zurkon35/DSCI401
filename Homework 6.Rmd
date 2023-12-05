@@ -1,0 +1,43 @@
+---
+title: "Homework 6"
+author: "Alex Hentz"
+date: "2023-11-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Google Colab Link: https://colab.research.google.com/drive/19O7TueX5x_Y0F0QPslXqu-ghP8eS5owS?usp=sharing
+
+```{r}
+library(tidyverse)
+library(mdsr)
+library(ggplot2)
+library(plotly)
+library(lubridate)
+library(dplyr)
+library(macleish)
+what <- read.csv("https://raw.githubusercontent.com/gjm112/DSCI401/main/data/whately_2015.csv")
+
+what<-whately_2015
+what$when <- as.Date(what$when, "%Y-%m-%d")
+
+g<-what %>% 
+  group_by(when) %>% 
+  summarise(min_temp=min(temperature),
+            max_temp=max(temperature),
+            avg_temp=mean(temperature))
+  
+graph<-ggplot(g, aes(x = when)) +
+  geom_line(aes(y = max_temp, color = "High Temp")) +
+  geom_line(aes(y = avg_temp, color = "Avg Temp")) +
+  geom_line(aes(y = min_temp, color = "Low Temp")) +
+  labs(title = "Daily Temp Trends",
+       x = "Time (in days)",
+       y = "Temp") +
+  scale_color_manual(values = c("High Temp" = "#FF6699", "Avg Temp" = "#99ccff", "Low Temp" = "#9999ff")) + theme_minimal()
+ggplotly(graph)
+
+
