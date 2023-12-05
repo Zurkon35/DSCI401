@@ -1,0 +1,119 @@
+---
+title: "Homework 3"
+author: "Alex Hentz"
+date: "2023-09-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Google Colab Link
+https://colab.research.google.com/drive/1XhwQgpzI4zIy-4osxejVeC63ZxMlL1LM?usp=sharing
+
+
+```{r}
+library(tidyverse)
+library(mdsr)
+library(Lahman)
+head(Batting)
+head(Pitching)
+head(People)
+pccc = read.csv("https://raw.githubusercontent.com/gjm112/DSCI401/main/data/pccc_icd10_dataset.csv")
+
+```
+
+```{r}
+
+# Question 1a
+Batting %>%
+  group_by(playerID) %>%
+  summarise(totalHR = sum(HR), totalSB = sum(SB)) %>%
+  filter(totalHR >= 300 & totalSB >= 300) %>%
+  left_join(People, by = c("playerID" = "playerID")) %>%
+  select(nameFirst, nameLast, totalHR, totalSB)
+
+# Question 1b
+Pitching %>%
+  group_by(playerID) %>%
+  summarise(totalW = sum(W), totalSO = sum(SO)) %>%
+  filter(totalW >= 300 & totalSO >= 3000) %>%
+  left_join(People, by = c("playerID" = "playerID")) %>%
+  select(nameFirst, nameLast, totalW, totalSO)
+
+# Question 1c
+Batting %>%
+  group_by(playerID, yearID) %>%
+  summarise(tHR = sum(HR), BA = sum(H)/sum(AB)) %>%
+  filter(tHR >= 50) %>%
+  left_join(People, by = c("playerID" = "playerID")) %>%
+  select(nameFirst, nameLast, tHR, BA) %>%
+  ungroup() %>%
+  arrange(BA)
+
+```
+
+```{r}
+# Question 2a
+
+library(nycflights13)
+planes %>%
+      rename(year_built = year) %>%
+      left_join(flights, by = "tailnum") %>%
+      arrange(year_built) %>%
+      select(tailnum, year_built) %>%
+      head(1)
+
+#  Question 2b
+flights%>%
+      group_by(tailnum) %>%
+      slice(1L) %>%
+      inner_join(planes, by = "tailnum")%>%
+      ungroup()
+      
+# Question 3
+library(tidyr)
+
+data <- list(
+  grp = c('A', 'A', 'B', 'B'),
+  sex = c('F', 'M', 'F', 'M')
+)
+meanL <- c(0.225, 0.47, 0.325, 0.547)
+sdL <- c(0.106, 0.325, 0.106, 0.308)
+meanR <- c(0.34, 0.57, 0.4, 0.647)
+sdR <- c(0.0849, 0.325, 0.0707, 0.274)
+three <- data.frame(data)
+three$meanL <- meanL
+three$sdL <- sdL
+three$meanR <- meanR
+three$sdR <- sdR
+print(three)
+
+data <- list(
+  grp = c('A', 'A', 'B', 'B'),
+  sex = c('F', 'M', 'F', 'M'),
+  meanL = c(0.225, 0.47, 0.325, 0.547),
+  sdL = c(0.106, 0.325, 0.106, 0.308),
+  meanR = c(0.34, 0.57, 0.4, 0.647),
+  sdR = c(0.0849, 0.325, 0.0707, 0.274)
+)
+three <- data.frame(data)
+wide_df <- pivot_wider(three, names_from = sex, values_from = c(meanL, sdL, meanR, sdR), names_sep = "_")
+print(wide_df)
+
+# Question 4a
+library(pccc)
+head(pccc_icd10_dataset)
+
+g <- pccc_icd10_dataset[,!grepl("g",names(pccc_icd10_dataset))]
+
+
+# Question 4b
+
+library(reshape2)
+
+melted_pccc <- melt(pccc, id.vars='id', variable.name='type', value.name='code')
+
+
+```
