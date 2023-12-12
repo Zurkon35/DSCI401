@@ -1,0 +1,134 @@
+---
+title: "DSCI 401 Project"
+author: "Alex Hentz"
+date: "2023-11-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(plotly)
+library(stringr)
+federal_net_cost <- read_excel("C:/Users/alexh/OneDrive/federal_net_cost.xls")
+View(federal_net_cost)
+
+# Create a Bar Chart of all the agencies and their gross cost of 2022 and 2001
+federal_net_cost$`Gross Cost (in Billions)` <- as.numeric(gsub("[^0-9.]", "", as.character(federal_net_cost$`Gross Cost (in Billions)`)))
+federal_net_cost$`Subtotal (in Billions)` <- as.numeric(gsub("[^0-9.]", "", as.character(federal_net_cost$`Subtotal (in Billions)`)))
+
+hidden_row <- federal_net_cost$`Agency Name` == "Total"
+new_hidden_row <- federal_net_cost[!hidden_row, ]
+
+gross_cost <- new_hidden_row %>% group_by(`Statement Fiscal Year`) %>% select(`Agency Name`, `Gross Cost (in Billions)`) %>% filter(`Statement Fiscal Year` == 2022)
+
+bgc <- ggplot(data = gross_cost, aes(x = `Agency Name`, y = `Gross Cost (in Billions)`, fill = `Agency Name`)) +
+  geom_bar(stat = "identity", width=1) + scale_x_discrete(label = function(x) stringr::str_trunc(x, 12)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("2022 Federal Government Gross Cost")
+ggplotly(bgc)
+
+# 2001 Graph
+
+gross_cost_2 <- new_hidden_row %>% group_by(`Statement Fiscal Year`) %>% select(`Agency Name`, `Gross Cost (in Billions)`) %>% filter(`Statement Fiscal Year` == 2001)
+
+bgcc <- ggplot(data = gross_cost_2, aes(x = `Agency Name`, y = `Gross Cost (in Billions)`, fill = `Agency Name`)) +
+  geom_bar(stat = "identity", width=1) + scale_x_discrete(label = function(x) stringr::str_trunc(x, 12)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("2001 Federal Government Gross Cost")
+
+ggplotly(bgcc)
+
+# Create a chart of 2022 and 2011 of the subtotal cost of the agencies
+
+
+subtotal <- new_hidden_row %>% group_by(`Statement Fiscal Year`) %>% select(`Agency Name`, `Subtotal (in Billions)`) %>% filter(`Statement Fiscal Year` == 2022)
+
+bnc <- ggplot(data = subtotal, aes(x = `Agency Name`, y = `Subtotal (in Billions)`, fill = `Agency Name`)) +
+  geom_bar(stat = "identity", width=1) + scale_x_discrete(label = function(x) stringr::str_trunc(x, 12)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("2022 Federal Government Subtotal Cost")
+
+ggplotly(bnc)
+
+subtotal_2 <- new_hidden_row %>% group_by(`Statement Fiscal Year`) %>% select(`Agency Name`, `Subtotal (in Billions)`) %>% filter(`Statement Fiscal Year` == 2011)
+
+bncc <- ggplot(data = subtotal_2, aes(x = `Agency Name`, y = `Subtotal (in Billions)`, fill = `Agency Name`)) +
+  geom_bar(stat = "identity", width=1) + scale_x_discrete(label = function(x) stringr::str_trunc(x, 12)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("2011 Federal Government Subtotal Cost")
+
+ggplotly(bncc)
+
+
+# President term spending comparison
+
+Transportation <- federal_net_cost %>% 
+  mutate(Four_Year_Period = cut(`Statement Fiscal Year`, breaks = c(2000, 2004, 2008, 2012, 2016, 2020, 2024), labels = c("2001-2004", "2005-2008", "2009-2012", "2013-2016", "2017-2020", "2021-2024"), include.lowest = TRUE)) %>%
+  filter(`Agency Name` == "Department of Transportation") %>%
+  group_by(Four_Year_Period) %>% 
+  summarise(Sum_Gross_Cost = sum(`Gross Cost (in Billions)`, na.rm = TRUE))
+print(Transportation)
+
+Social_Security <- federal_net_cost %>% 
+  mutate(Four_Year_Period = cut(`Statement Fiscal Year`, breaks = c(2000, 2004, 2008, 2012, 2016, 2020, 2024), labels = c("2001-2004", "2005-2008", "2009-2012", "2013-2016", "2017-2020", "2021-2024"), include.lowest = TRUE)) %>%
+  filter(`Agency Name` == "Social Security Administration") %>%
+  group_by(Four_Year_Period) %>% 
+  summarise(Sum_Gross_Cost = sum(`Gross Cost (in Billions)`, na.rm = TRUE))
+print(Social_Security)
+
+Defense <- federal_net_cost %>% 
+  mutate(Four_Year_Period = cut(`Statement Fiscal Year`, breaks = c(2000, 2004, 2008, 2012, 2016, 2020, 2024), labels = c("2001-2004", "2005-2008", "2009-2012", "2013-2016", "2017-2020", "2021-2024"), include.lowest = TRUE)) %>%
+  filter(`Agency Name` == "Department of Defense") %>%
+  group_by(Four_Year_Period) %>% 
+  summarise(Sum_Gross_Cost = sum(`Gross Cost (in Billions)`, na.rm = TRUE))  
+print(Defense)
+
+Education <- federal_net_cost %>% 
+  mutate(Four_Year_Period = cut(`Statement Fiscal Year`, breaks = c(2000, 2004, 2008, 2012, 2016, 2020, 2024), labels = c("2001-2004", "2005-2008", "2009-2012", "2013-2016", "2017-2020", "2021-2024"), include.lowest = TRUE)) %>%
+  filter(`Agency Name` == "Department of Education") %>%
+  group_by(Four_Year_Period) %>% 
+  summarise(Sum_Gross_Cost = sum(`Gross Cost (in Billions)`, na.rm = TRUE))
+print(Education)
+
+Energy <- federal_net_cost %>% 
+  mutate(Four_Year_Period = cut(`Statement Fiscal Year`, breaks = c(2000, 2004, 2008, 2012, 2016, 2020, 2024), labels = c("2001-2004", "2005-2008", "2009-2012", "2013-2016", "2017-2020", "2021-2024"), include.lowest = TRUE)) %>%
+  filter(`Agency Name` == "Department of Energy") %>%
+  group_by(Four_Year_Period) %>% 
+  summarise(Sum_Gross_Cost = sum(`Gross Cost (in Billions)`, na.rm = TRUE))
+print(Energy)
+
+Health_Human <- federal_net_cost %>% 
+  mutate(Four_Year_Period = cut(`Statement Fiscal Year`, breaks = c(2000, 2004, 2008, 2012, 2016, 2020, 2024), labels = c("2001-2004", "2005-2008", "2009-2012", "2013-2016", "2017-2020", "2021-2024"), include.lowest = TRUE)) %>%
+  filter(`Agency Name` == "Department of Health and Human Services") %>%
+  group_by(Four_Year_Period) %>% 
+  summarise(Sum_Gross_Cost = sum(`Gross Cost (in Billions)`, na.rm = TRUE))
+print(Health_Human)
+
+Veterans <- federal_net_cost %>% 
+  mutate(Four_Year_Period = cut(`Statement Fiscal Year`, breaks = c(2000, 2004, 2008, 2012, 2016, 2020, 2024), labels = c("2001-2004", "2005-2008", "2009-2012", "2013-2016", "2017-2020", "2021-2024"), include.lowest = TRUE)) %>%
+  filter(`Agency Name` == "Department of Veterans Affairs") %>%
+  group_by(Four_Year_Period) %>% 
+  summarise(Sum_Gross_Cost = sum(`Gross Cost (in Billions)`, na.rm = TRUE))
+print(Veterans)
+
+
+# Stacked Bar chart
+combined_data <- rbind(
+  mutate(Transportation, Agency = "Transportation"),
+  mutate(Social_Security, Agency = "Social Security"),
+  mutate(Defense, Agency = "Defense"),
+  mutate(Education, Agency = "Education"),
+  mutate(Energy, Agency = "Energy"),
+  mutate(Health_Human, Agency = "Health and Human Services"),
+  mutate(Veterans, Agency = "Veterans")
+)
+
+# Create a stacked bar chart
+stack_dep <- ggplot(combined_data, aes(x = Four_Year_Period, y = Sum_Gross_Cost, fill = Agency)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Federal Net Cost by Agency Over Time",
+       x = "Four Year Period",
+       y = "Sum Gross Cost (in Billions)",
+       fill = "Agency") +
+  theme_minimal()
+ggplotly(stack_dep)
